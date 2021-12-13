@@ -5,16 +5,54 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <script
-      src="https://cdn.socket.io/4.4.0/socket.io.min.js"
-      integrity="sha384-1fOn6VtTq3PWwfsOrk45LnYcGosJwzMHv+Xh/Jx5303FVOXzEnw0EpLv30mtjmlj"
-      crossorigin="anonymous"
-    ></script>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Hello Baby</h1>
+    <div id="chat">
+      <div id="title"><h2>Kaung's Chat App</h2></div>
+      <div id="chat-window">
+        <div id="output"></div>
+        <div id="feedback"></div>
+      </div>
+      <div id="input">
+        <input type="text" placeholder="Name" id="name" /><br />
+        <input type="text" placeholder="Message" id="message" /><br />
+        <button id="send">Send</button>
+      </div>
+    </div>
+
     <script>
       const socket = io("http://localhost:3000");
+      let output = document.getElementById("output");
+      let message = document.getElementById("message");
+      let name = document.getElementById("name");
+      let send = document.getElementById("send");
+      let feedback = document.getElementById("feedback");
+
+      message.addEventListener("keypress", () => {
+        socket.emit("typing", name.value);
+      });
+      send.addEventListener("click", () => {
+        let data = {
+          name: name.value,
+          message: message.value,
+        };
+        socket.emit("chat", data);
+      });
+
+      /**listen events*/
+      socket.on("chat", (data) => {
+        output.innerHTML += `<p><strong>${data.name}</strong> :  ${data.message}</p>`;
+        name.value = "";
+        message.value = "";
+        feedback.innerHTML = "";
+      });
+      socket.on("typing", (name) => {
+        feedback.innerHTML = `<p><em>${name}</em> is typing ...</p>`;
+        setTimeout(() => {
+          feedback.innerHTML = "";
+        }, 3000);
+      });
     </script>
   </body>
 </html>
